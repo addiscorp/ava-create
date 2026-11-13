@@ -73,6 +73,17 @@ test('scripts, handlers, frames and javascript: URLs never reach an artboard fil
   assert.ok(cleaned.removed.length >= 5, String(cleaned.removed))
 })
 
+test('HTML a small model escaped (&lt;div&gt;…) becomes the page it meant; real HTML is left alone', () => {
+  const b = Board.empty(parse)
+  const { artboard } = b.create({ name: 'Home', html: '&lt;section class=&quot;hero&quot;&gt;&lt;h1&gt;Crumb &amp;amp; co&lt;/h1&gt;&lt;/section&gt;' })
+  const d = doc(artboard.html)
+  assert.equal(d.querySelector('section.hero h1')?.textContent, 'Crumb & co')
+  b.write('home', '<p>Use &lt;b&gt; for bold</p>')
+  assert.equal(doc(b.get('home').html).querySelector('p')?.textContent, 'Use <b> for bold')
+  b.patch('home', { selector: 'p', action: 'insert_after', html: '&lt;footer id=&quot;f&quot;&gt;x&lt;/footer&gt;' })
+  assert.equal(doc(b.get('home').html).querySelector('footer#f')?.textContent, 'x')
+})
+
 test('remote resources are counted so Ava can be told they will not load', () => {
   const r = standalone('<img src="https://e.com/a.png"><style>body{background:url(https://e.com/b.png)}</style>', 'X', parse)
   assert.equal(r.cleaned.remote, 2)

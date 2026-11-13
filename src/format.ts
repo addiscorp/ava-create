@@ -203,6 +203,7 @@ const DANGEROUS = 'script, iframe, frame, frameset, object, embed, applet, porta
  * its own as it is inside Create.
  */
 export function standalone(html: string, name: string, parse: ParseHtml, links: Links = { tokens: TOKENS_FILE, tailwind: false }): { html: string; cleaned: Cleaned } {
+  html = unescapeHtml(html)
   // A fragment goes in a body of its own; every parser then reads it the same way.
   const whole = /<html[\s>]/i.test(html) || /<body[\s>]/i.test(html)
   const doc = parse(whole ? html : `<!doctype html><html><head></head><body>${html}</body></html>`)
@@ -243,6 +244,16 @@ export function standalone(html: string, name: string, parse: ParseHtml, links: 
     else head.append(link)
   }
   return { html: serialize(doc), cleaned }
+}
+
+/**
+ * HTML that arrived escaped (`&lt;div&gt;…`, no real tag anywhere), as small
+ * models sometimes write it in a tool's JSON, read back as the HTML it means.
+ * Anything with a real tag in it is left alone.
+ */
+export function unescapeHtml(html: string): string {
+  if (/<[a-zA-Z!/]/.test(html) || !/&lt;[a-zA-Z!/]/.test(html)) return html
+  return html.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#0?39;|&apos;/g, "'").replace(/&amp;/g, '&')
 }
 
 /** The board files an artboard links to. */

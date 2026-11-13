@@ -2,7 +2,7 @@
 // without writing the whole page again. Every element the selector matches
 // changes; no match is an error that names what is there, so a small model
 // can try again with a selector that exists.
-import type { ParseHtml } from './format.ts'
+import { unescapeHtml, type ParseHtml } from './format.ts'
 
 export const ACTIONS = [
   'replace', 'set_html', 'set_text', 'append', 'prepend', 'insert_before', 'insert_after',
@@ -62,7 +62,7 @@ export function selectorsIn(doc: Document, most = 24): string[] {
 
 function fragment(doc: Document, html: string): Node[] {
   const holder = doc.createElement('div')
-  holder.innerHTML = html
+  holder.innerHTML = unescapeHtml(html)
   return [...holder.childNodes]
 }
 
