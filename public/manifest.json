@@ -1,0 +1,142 @@
+{
+  "id": "create",
+  "name": "Create",
+  "version": "0.1.0",
+  "description": "A design canvas: Ava builds pages as HTML and CSS artboards while you watch.",
+  "entry": "index.html",
+  "icon": "icon.svg",
+  "permissions": ["storage", "tools"],
+  "egress": [],
+  "tools": [
+    {
+      "name": "list_artboards",
+      "description": "List the artboards on the person's Create board (their design canvas): each one's id, name, position and size, and the board's style (css or tailwind). Start here before changing a design.",
+      "effect": "read",
+      "input_schema": { "type": "object", "properties": {} }
+    },
+    {
+      "name": "new_artboard",
+      "description": "Add an artboard to the Create board: one page or screen of a design, drawn from HTML and CSS. Give it a name and, ideally, its whole page in `html` straight away (a <style> block plus the page's elements; use the board's tokens as var(--color-accent) etc.; no scripts; images only as inline <svg> or data: URLs). In a tailwind board, style with Tailwind classes instead. Desktop pages are 1440 wide, phones 390. It appears on the canvas at once.",
+      "effect": "inside",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string", "description": "What it is, e.g. 'Home' or 'Pricing'." },
+          "html": { "type": "string", "description": "The page: HTML with a <style> block, or a whole HTML document." },
+          "width": { "type": "integer", "description": "Width in pixels (default 1440)." },
+          "height": { "type": "integer", "description": "Height in pixels (default 1024). Make it tall enough for the whole page." },
+          "x": { "type": "integer", "description": "Where on the canvas (default: right of the others)." },
+          "y": { "type": "integer", "description": "Where on the canvas (default: level with the others)." }
+        },
+        "required": ["name"]
+      }
+    },
+    {
+      "name": "read_artboard",
+      "description": "Read one artboard's HTML from the Create board, by its id or name.",
+      "effect": "read",
+      "input_schema": {
+        "type": "object",
+        "properties": { "artboard": { "type": "string", "description": "Its id (from list_artboards) or name." } },
+        "required": ["artboard"]
+      }
+    },
+    {
+      "name": "write_artboard",
+      "description": "Replace an artboard's whole HTML on the Create board (a <style> block plus the page's elements, or a whole document). For a small change use patch_artboard instead.",
+      "effect": "inside",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "artboard": { "type": "string", "description": "Its id or name." },
+          "html": { "type": "string", "description": "The new page." }
+        },
+        "required": ["artboard", "html"]
+      }
+    },
+    {
+      "name": "patch_artboard",
+      "description": "Change part of an artboard on the Create board: every element matching a CSS selector. Actions: set_text (new words, in `text`), set_html (new inside, in `html`), replace (the element itself, `html`), append / prepend (inside it, `html`), insert_before / insert_after (next to it, `html`), remove, set_style (CSS declarations in `style`, e.g. 'color: #333; padding: 24px'), set_attribute / remove_attribute (`attribute`, `value`), add_class / remove_class (`value`). If nothing matches, the error lists selectors that exist.",
+      "effect": "inside",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "artboard": { "type": "string", "description": "Its id or name." },
+          "selector": { "type": "string", "description": "A CSS selector, e.g. '#hero h1' or '.card'." },
+          "action": { "type": "string", "enum": ["set_text", "set_html", "replace", "append", "prepend", "insert_before", "insert_after", "remove", "set_style", "set_attribute", "remove_attribute", "add_class", "remove_class"] },
+          "text": { "type": "string" },
+          "html": { "type": "string" },
+          "style": { "type": "string" },
+          "attribute": { "type": "string" },
+          "value": { "type": "string" }
+        },
+        "required": ["artboard", "selector", "action"]
+      }
+    },
+    {
+      "name": "move_artboard",
+      "description": "Rename, move or resize an artboard on the Create board. Give only what changes.",
+      "effect": "inside",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "artboard": { "type": "string", "description": "Its id or name." },
+          "name": { "type": "string" },
+          "x": { "type": "integer" },
+          "y": { "type": "integer" },
+          "width": { "type": "integer" },
+          "height": { "type": "integer" }
+        },
+        "required": ["artboard"]
+      }
+    },
+    {
+      "name": "delete_artboard",
+      "description": "Delete an artboard from the Create board.",
+      "effect": "inside",
+      "input_schema": {
+        "type": "object",
+        "properties": { "artboard": { "type": "string", "description": "Its id or name." } },
+        "required": ["artboard"]
+      }
+    },
+    {
+      "name": "get_tokens",
+      "description": "The Create board's design tokens: CSS variables (colours, fonts, radius…) every artboard can use as var(--name).",
+      "effect": "read",
+      "input_schema": { "type": "object", "properties": {} }
+    },
+    {
+      "name": "set_tokens",
+      "description": "Set design tokens on the Create board, e.g. { \"--color-accent\": \"#e4572e\", \"--font-sans\": \"Georgia, serif\" }. Every artboard that uses them changes at once. An empty value removes one.",
+      "effect": "inside",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "tokens": { "type": "object", "description": "Token name → CSS value.", "additionalProperties": { "type": "string" } }
+        },
+        "required": ["tokens"]
+      }
+    },
+    {
+      "name": "look_at_artboard",
+      "description": "Look at an artboard on the Create board as it's drawn: a picture of it, and its layout (the main pieces with their positions and words, and problems such as content cut off at the bottom or images that don't load). Use it to check your work.",
+      "effect": "read",
+      "input_schema": {
+        "type": "object",
+        "properties": { "artboard": { "type": "string", "description": "Its id or name." } },
+        "required": ["artboard"]
+      }
+    },
+    {
+      "name": "set_board_style",
+      "description": "Switch how the Create board's artboards are styled: 'css' (their own <style> blocks) or 'tailwind' (Tailwind classes, with the tokens as the theme: --color-accent gives bg-accent, text-accent). Only when the person asks for Tailwind or plain CSS.",
+      "effect": "inside",
+      "input_schema": {
+        "type": "object",
+        "properties": { "style": { "type": "string", "enum": ["css", "tailwind"] } },
+        "required": ["style"]
+      }
+    }
+  ]
+}
