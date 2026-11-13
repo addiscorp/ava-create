@@ -395,7 +395,7 @@ viewport.addEventListener('gesturechange', e => {
 })
 
 addEventListener('keydown', e => {
-  if ((e.target as HTMLElement).closest('input, textarea')) return
+  if ((e.target as Element | null)?.closest?.('input, textarea')) return
   if (e.code === 'Space') { space = true; viewport.classList.add('grab') }
   const mod = e.metaKey || e.ctrlKey
   if (e.shiftKey && e.code === 'Digit1') { e.preventDefault(); fit() }

@@ -62,7 +62,9 @@ function measure(doc: Document, width: number, height: number): Layout {
       if (r.width < 1 || r.height < 1) continue
       const big = r.width * r.height >= width * height * 0.01
       const text = (child as HTMLElement).innerText?.replace(/\s+/g, ' ').trim()
-      if (big || (depth <= 2 && text)) {
+      // A wrapper the same size as what it wraps says nothing new.
+      const same = blocks.some(b => b.x === Math.round(r.x) && b.y === Math.round(r.y) && b.width === Math.round(r.width) && b.height === Math.round(r.height))
+      if (!same && (big || (depth <= 2 && text))) {
         blocks.push({ element: label(child), x: Math.round(r.x), y: Math.round(r.y), width: Math.round(r.width), height: Math.round(r.height), ...(text ? { text: text.length > 80 ? `${text.slice(0, 80)}…` : text } : {}) })
       }
       if (depth < 3 && big) walk(child, depth + 1)
@@ -70,6 +72,10 @@ function measure(doc: Document, width: number, height: number): Layout {
   }
   walk(doc.body, 0)
   if (!blocks.length) problems.push('The artboard shows nothing yet.')
+  else {
+    const bottom = Math.max(...blocks.map(b => b.y + b.height))
+    if (bottom < height * 0.6) problems.push(`The content ends at ${bottom}px and the rest of the artboard (${height - bottom}px) is empty: add sections, or make the artboard shorter (move_artboard, height).`)
+  }
   for (const img of [...doc.images]) {
     if (img.complete && img.naturalWidth === 0) problems.push(`${label(img)} (${(img.getAttribute('src') ?? '').slice(0, 40) || 'no src'}) doesn't show: only data: images and inline <svg> load in Create.`)
   }
