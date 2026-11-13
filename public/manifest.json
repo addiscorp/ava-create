@@ -16,7 +16,7 @@
     },
     {
       "name": "new_artboard",
-      "description": "Add an artboard to the Create board: one page or screen of a design, drawn from HTML and CSS. Give it a name and, ideally, its whole page in `html` straight away (a <style> block plus the page's elements; use the board's tokens as var(--color-accent) etc.; no scripts; images only as inline <svg> or data: URLs). In a tailwind board, style with Tailwind classes instead. Desktop pages are 1440 wide, phones 390. It appears on the canvas at once.",
+      "description": "Add an artboard to the Create board: one page or screen of a design, drawn from HTML and CSS. Give it a name, a size, and in `html` its <style> block and the first section of the page (use the board's tokens as var(--color-accent) etc.; no scripts; images only as inline <svg> or data: URLs). Keep each call short (a long call gets cut off): add the other sections one at a time with patch_artboard, selector 'body', action 'append'. In a tailwind board, style with Tailwind classes instead. Desktop pages are 1440 wide, phones 390. It appears on the canvas at once.",
       "effect": "inside",
       "input_schema": {
         "type": "object",
@@ -43,7 +43,7 @@
     },
     {
       "name": "write_artboard",
-      "description": "Replace an artboard's whole HTML on the Create board (a <style> block plus the page's elements, or a whole document). For a small change use patch_artboard instead.",
+      "description": "Replace an artboard's whole HTML on the Create board (a <style> block plus the page's elements, or a whole document). Keep it short: for a change, or to add a section, use patch_artboard instead.",
       "effect": "inside",
       "input_schema": {
         "type": "object",
@@ -56,7 +56,7 @@
     },
     {
       "name": "patch_artboard",
-      "description": "Change part of an artboard on the Create board: every element matching a CSS selector. Actions: set_text (new words, in `text`), set_html (new inside, in `html`), replace (the element itself, `html`), append / prepend (inside it, `html`), insert_before / insert_after (next to it, `html`), remove, set_style (CSS declarations in `style`, e.g. 'color: #333; padding: 24px'), set_attribute / remove_attribute (`attribute`, `value`), add_class / remove_class (`value`). If nothing matches, the error lists selectors that exist.",
+      "description": "Change part of an artboard on the Create board: every element matching a CSS selector. Actions: set_text (new words, in `text`), set_html (new inside, in `html`), replace (the element itself, `html`), append / prepend (inside it, `html`), insert_before / insert_after (next to it, `html`), remove, set_style (CSS declarations in `style`, e.g. 'color: #333; padding: 24px'), set_attribute / remove_attribute (`attribute`, `value`), add_class / remove_class (`value`). To add a section at the end of a page: selector 'body', action 'append', the section in `html`. If nothing matches, the error lists selectors that exist.",
       "effect": "inside",
       "input_schema": {
         "type": "object",
