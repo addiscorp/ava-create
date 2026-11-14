@@ -1,9 +1,9 @@
 # Check, test and build Create on every PR and on main.
 #
-# Runners: this repo is public, so CI runs on GitHub-hosted runners like the
-# other public addiscorp repos (rixse, mirab). The mirab VM pool serves private
-# repos only (APS 11). This repo has no publish
-# job: addiscorp/ava-catalogue builds Create from a pinned commit, signs it
+# Runners: this repo is public, so CI runs on GitHub-hosted runners, as
+# public repos may (APS 11, as Sami amended it on 10-12 Nov). Private repos
+# run on our own runners. This repo has no publish
+# job: avacanada/ava-catalogue builds Create from a pinned commit, signs it
 # and publishes it (see README.md).
 name: CI
 

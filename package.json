@@ -4,7 +4,7 @@
   "license": "UNLICENSED",
   "type": "module",
   "description": "Create: an infinite design canvas where Ava builds HTML/CSS artboards with tools, as an Ava add-on. `npm run build` writes the add-on's bundle to dist/. Its version is public/manifest.json's, nowhere else.",
-  "repository": "https://github.com/addiscorp/ava-create",
+  "repository": "https://github.com/avacanada/ava-create",
   "scripts": {
     "build": "tsc --noEmit && vite build",
     "check": "tsc --noEmit",

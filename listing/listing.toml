@@ -1,4 +1,4 @@
-# Create's listing: what the catalogue (addiscorp/ava-catalogue), Ava's
+# Create's listing: what the catalogue (avacanada/ava-catalogue), Ava's
 # Settings › Add-ons and heyava.ca/addons/create show about it. The
 # catalogue reads this folder at the pinned commit, checks it, and copies it
 # into the signed package and the signed index. The name, version and short
