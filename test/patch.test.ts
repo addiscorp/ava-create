@@ -20,7 +20,9 @@ const PAGE = '<header id="nav"><a class="logo">Crumb</a></header><main><section 
 
 test('set_text changes the words and nothing else', () => {
   const { patch, q } = board(PAGE)
-  assert.equal(patch({ selector: '#hero h1', action: 'set_text', text: 'Fresh <b>bread</b>' }).changed, 1)
+  const r = patch({ selector: '#hero h1', action: 'set_text', text: 'Fresh <b>bread</b>' }).report
+  assert.equal(r.matched, 1)
+  assert.deepEqual(r.changes, [{ selector: 'h1', element: 'h1 “Old”', before: 'Old', after: 'Fresh <b>bread</b>' }])
   assert.equal(q('#hero h1')[0].textContent, 'Fresh <b>bread</b>', 'text is text, never markup')
   assert.equal(q('#hero b').length, 0)
   assert.equal(q('.lead')[0].textContent, 'Lead')
@@ -41,10 +43,102 @@ test('replace, append, prepend, insert_before/after and remove change the tree',
   assert.equal(q('#banner').length, 0)
 })
 
-test('every match changes, and the count says so', () => {
+test('a style for several matches changes every one, and the answer lists each before and after', () => {
   const { patch, q } = board(PAGE)
-  assert.equal(patch({ selector: '.list li', action: 'set_style', style: 'color: red' }).changed, 2)
+  const r = patch({ selector: '.list li', action: 'set_style', style: 'color: red' }).report
   assert.deepEqual([...q('.list li')].map(e => e.getAttribute('style')), ['color: red', 'color: red'])
+  assert.equal(r.matched, 2)
+  assert.deepEqual(r.changes.map(c => [c.selector, c.element, c.before, c.after]), [
+    ['ul.list > li:nth-of-type(1)', 'li “1”', '', 'color: red'],
+    ['ul.list > li:nth-of-type(2)', 'li “2”', '', 'color: red'],
+  ])
+})
+
+// The live run (addiscorp/ava#53): Qwen3.5 4B set every nav link to "Home Menu
+// Contact" and every paragraph to one sentence, because its selector matched many.
+const BAKERY = '<header><nav><a href="#">Home</a><a href="#">Menu</a><a href="#">Contact</a></nav></header>' +
+  '<section class="hero"><p>Fresh bread every morning.</p></section>' +
+  '<section class="features"><div><p>Sourdough</p></div><div><p>Pastries</p></div><div><p>Coffee</p></div></section>'
+
+test('set_text on a selector that matches several elements changes nothing, and names each one', () => {
+  const { b, patch, q } = board(BAKERY)
+  const before = b.get('home').html
+  let message = ''
+  assert.throws(() => patch({ selector: 'header nav a', action: 'set_text', text: 'Home Menu Contact' }), (e: Error) => { message = e.message; return true })
+  assert.equal(b.get('home').html, before, 'the page is untouched')
+  assert.deepEqual([...q('nav a')].map(a => a.textContent), ['Home', 'Menu', 'Contact'])
+  assert.match(message, /matches 3 elements/)
+  assert.match(message, /all: true/)
+  // Each selector it offers matches exactly the element it names.
+  const list = message.split('just that one: ')[1]?.split('. Only if')[0] ?? ''
+  const offered = list.split('; ').map(item => item.match(/^(.+) \(a “(\w+)”\)$/)).map(m => [m?.[1] ?? '', m?.[2] ?? ''])
+  assert.deepEqual(offered.map(o => o[0]), ['nav > a:nth-of-type(1)', 'nav > a:nth-of-type(2)', 'nav > a:nth-of-type(3)'], message)
+  for (const [sel, words] of offered) {
+    const hit = q(sel)
+    assert.equal(hit.length, 1, sel)
+    assert.equal(hit[0].textContent, words, sel)
+  }
+  // Using one of them changes that link alone.
+  patch({ selector: offered[1][0], action: 'set_text', text: 'Our menu' })
+  assert.deepEqual([...q('nav a')].map(a => a.textContent), ['Home', 'Our menu', 'Contact'])
+})
+
+test('the paragraphs keep their own copy: set_html, replace and remove on many are refused too', () => {
+  const { b, patch, q } = board(BAKERY)
+  const before = b.get('home').html
+  for (const action of ['set_text', 'set_html', 'replace', 'remove']) {
+    assert.throws(() => patch({ selector: 'section p', action, text: 'Same sentence.', html: '<p>Same sentence.</p>' }), /matches 4 elements/, action)
+  }
+  assert.equal(b.get('home').html, before)
+  assert.deepEqual([...q('p')].map(p => p.textContent), ['Fresh bread every morning.', 'Sourdough', 'Pastries', 'Coffee'])
+})
+
+test('all: true changes every match when that is what the call means', () => {
+  const { patch, q } = board(BAKERY)
+  const r = patch({ selector: '.features p', action: 'set_text', text: 'Soon', all: true }).report
+  assert.equal(r.matched, 3)
+  assert.deepEqual([...q('.features p')].map(p => p.textContent), ['Soon', 'Soon', 'Soon'])
+  assert.deepEqual(r.changes.map(c => [c.before, c.after]), [['Sourdough', 'Soon'], ['Pastries', 'Soon'], ['Coffee', 'Soon']])
+  assert.equal(patchFrom({ selector: 'p', action: 'remove', all: 'true' }).all, true)
+  assert.equal(patchFrom({ selector: 'p', action: 'remove' }).all, false)
+})
+
+test('a removal reports what went, and a no-op says nothing changed', () => {
+  const { patch, q } = board(BAKERY)
+  const gone = patch({ selector: '.hero p', action: 'remove' }).report
+  assert.equal(q('.hero p').length, 0)
+  assert.deepEqual(gone.changes, [{ selector: 'section.hero > p', element: 'p “Fresh bread every morning.”', before: '<p>Fresh bread every morning.</p>', after: null }])
+  assert.equal(gone.unchanged, false)
+  assert.equal(patch({ selector: 'nav a:first-child', action: 'set_text', text: 'Home' }).report.unchanged, true)
+})
+
+test('undo puts the HTML back one change at a time, writes included, and says when there is nothing left', () => {
+  const { b, patch, q } = board(BAKERY)
+  const first = b.get('home').html
+  assert.equal(b.undoable('home'), 0)
+  assert.throws(() => b.undo('home'), /Nothing to undo/)
+  patch({ selector: '.hero p', action: 'set_text', text: 'Wrong' })
+  const second = b.get('home').html
+  b.write('Home', '<h1>Gone</h1>')
+  assert.equal(q('p').length, 0)
+  assert.equal(b.undoable('home'), 2)
+  assert.equal(b.undo('home').left, 1)
+  assert.equal(b.get('home').html, second)
+  assert.equal(q('.hero p')[0].textContent, 'Wrong')
+  assert.equal(b.undo('Home').left, 0)
+  assert.equal(b.get('home').html, first)
+  assert.throws(() => b.undo('home'), /Nothing to undo/)
+})
+
+test('a refused patch leaves nothing to undo; an undo is stored like any change', () => {
+  const { b, patch } = board(BAKERY)
+  assert.throws(() => patch({ selector: 'p', action: 'set_text', text: 'x' }))
+  assert.equal(b.undoable('home'), 0)
+  patch({ selector: '.hero p', action: 'set_text', text: 'x' })
+  const wrote: string[] = []
+  b.onChange(c => wrote.push(...c.wrote))
+  b.undo('home')
+  assert.deepEqual(wrote, ['home.html'])
 })
 
 test('set_style merges declarations; an empty value takes one out', () => {

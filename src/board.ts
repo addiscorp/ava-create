@@ -6,7 +6,7 @@ import {
   serialize, side, standalone, tokenName, tokenValue, writeBoardJson, writeTokens,
   type ArtboardEntry, type BoardJson, type Cleaned, type Links, type ParseHtml, type StyleKind, type Tokens,
 } from './format.ts'
-import { patchHtml, type Patch } from './patch.ts'
+import { patchHtml, type Patch, type Report } from './patch.ts'
 
 export type Artboard = ArtboardEntry & { html: string }
 
@@ -25,6 +25,8 @@ export type Change = {
 export type Place = { name?: string; x?: number; y?: number; width?: number; height?: number }
 
 const GAP = 120
+/** How many earlier versions of each artboard `undo` keeps. */
+export const UNDO_DEPTH = 20
 
 export class Board {
   name: string
@@ -215,18 +217,50 @@ export class Board {
   write(ref: string, html: string): { artboard: Artboard; cleaned: Cleaned } {
     const a = this.get(ref)
     const made = standalone(html, a.name, this.parse, this.links())
-    a.html = made.html
-    this.emit({ wrote: [a.file], removed: [], artboard: idOf(a) })
+    this.setHtml(a, made.html)
     return { artboard: a, cleaned: made.cleaned }
   }
 
-  patch(ref: string, p: Patch): { artboard: Artboard; changed: number; cleaned: Cleaned } {
+  patch(ref: string, p: Patch): { artboard: Artboard; report: Report; cleaned: Cleaned } {
     const a = this.get(ref)
-    const { doc, changed } = patchHtml(a.html, p, this.parse)
+    const { doc, report } = patchHtml(a.html, p, this.parse)
     const made = standalone(serialize(doc), a.name, this.parse, this.links())
-    a.html = made.html
+    this.setHtml(a, made.html)
+    return { artboard: a, report, cleaned: made.cleaned }
+  }
+
+  /**
+   * Earlier HTML of each artboard (by file), newest last, so a bad write or
+   * patch can be taken back. Kept while Create is open, not in the files.
+   */
+  private history = new Map<string, string[]>()
+
+  /** How many changes of an artboard's HTML `undo` can still take back. */
+  undoable(ref: string): number {
+    return this.history.get(this.get(ref).file)?.length ?? 0
+  }
+
+  private setHtml(a: Artboard, html: string) {
+    if (html !== a.html) {
+      const past = this.history.get(a.file) ?? []
+      past.push(a.html)
+      if (past.length > UNDO_DEPTH) past.shift()
+      this.history.set(a.file, past)
+    }
+    a.html = html
     this.emit({ wrote: [a.file], removed: [], artboard: idOf(a) })
-    return { artboard: a, changed, cleaned: made.cleaned }
+  }
+
+  /** Put an artboard's HTML back as it was before its last write or patch. */
+  undo(ref: string): { artboard: Artboard; left: number } {
+    const a = this.get(ref)
+    const past = this.history.get(a.file)
+    const prev = past?.pop()
+    if (prev === undefined) throw new Error(`Nothing to undo on “${a.name}”: it hasn't been written or patched since Create opened, or every change is already undone.`)
+    // Through standalone again: the board's style (and so its links) may have changed since.
+    a.html = standalone(prev, a.name, this.parse, this.links()).html
+    this.emit({ wrote: [a.file], removed: [], artboard: idOf(a) })
+    return { artboard: a, left: past!.length }
   }
 
   /** Rename, move or resize. The file keeps its name, so links to it hold. */
@@ -244,6 +278,7 @@ export class Board {
   remove(ref: string): Artboard {
     const a = this.get(ref)
     this.boards = this.boards.filter(b => b !== a)
+    this.history.delete(a.file)
     this.emit({ wrote: [BOARD_FILE], removed: [a.file], artboard: idOf(a) })
     return a
   }
