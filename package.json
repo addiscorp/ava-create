@@ -1,7 +1,7 @@
 {
   "name": "ava-addon-create",
   "private": true,
-  "license": "MIT",
+  "license": "UNLICENSED",
   "type": "module",
   "description": "Create: an infinite design canvas where Ava builds HTML/CSS artboards with tools, as an Ava add-on. `npm run build` writes the add-on's bundle to dist/. Its version is public/manifest.json's, nowhere else.",
   "repository": "https://github.com/addiscorp/ava-create",
