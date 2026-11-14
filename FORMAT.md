@@ -1,9 +1,14 @@
 # The Create board format, version 1
 
+> This specification, unlike Create's code, is licensed under
+> [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/): copy it,
+> implement it and build on it, with credit to Sami Fouad. Create itself is
+> proprietary (see [LICENSE](LICENSE)); the format is open so a board never
+> locks anyone in.
+
 A Create board is a folder of plain files: HTML, CSS and one small JSON file.
 Any browser opens its pages, any editor changes them, and any tool can read or
-write a board without Create. This document is the whole format. It is
-licensed MIT, like the code (see [LICENSE](LICENSE)): use it freely.
+write a board without Create. This document is the whole format.
 
 ## The files
 

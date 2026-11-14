@@ -80,5 +80,10 @@ Apache licensed, plus the OFL fonts from @fontsource.
 
 ## License
 
-MIT, see [LICENSE](LICENSE) (APS 17). The board format in
-[FORMAT.md](FORMAT.md) is MIT too.
+Proprietary, all rights reserved: see [LICENSE](LICENSE) (APS 17; Sami's
+decision of 13 Nov 2026 makes first-party Ava add-ons proprietary, like Ava).
+Versions released before that change stay MIT for anyone who has them.
+
+The board format in [FORMAT.md](FORMAT.md) is open: that document is licensed
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/), so anyone can read
+and write boards without Create.
