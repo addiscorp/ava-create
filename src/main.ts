@@ -454,12 +454,27 @@ const handlers: Record<string, (args: Args) => Promise<unknown>> = {
     await loaded
     if (typeof args.html !== 'string' || !args.html.trim()) throw new Error('Give the whole page in `html`.')
     const { artboard, cleaned } = board.write(ref(args), args.html)
-    return { wrote: summary(artboard), notes: notes(cleaned), open: { path: idOf(artboard) } }
+    return { wrote: summary(artboard), notes: notes(cleaned), undo: 'If this made it worse, undo_artboard puts it back.', open: { path: idOf(artboard) } }
   },
   async patch_artboard(args) {
     await loaded
-    const { artboard, changed, cleaned } = board.patch(ref(args), patchFrom(args))
-    return { patched: summary(artboard), changed, notes: notes(cleaned), open: { path: idOf(artboard) } }
+    const { artboard, report, cleaned } = board.patch(ref(args), patchFrom(args))
+    const say = [...notes(cleaned)]
+    if (report.unchanged) say.unshift('Nothing looks different: what you set is what was already there.')
+    if (report.matched > report.changes.length) say.push(`Only the first ${report.changes.length} of the ${report.matched} changes are listed.`)
+    return {
+      patched: summary(artboard),
+      matched: report.matched,
+      changes: report.changes,
+      notes: say,
+      undo: 'If this made it worse, undo_artboard puts it back.',
+      open: { path: idOf(artboard) },
+    }
+  },
+  async undo_artboard(args) {
+    await loaded
+    const { artboard, left } = board.undo(ref(args))
+    return { undone: summary(artboard), more_undos: left, open: { path: idOf(artboard) } }
   },
   async move_artboard(args) {
     await loaded

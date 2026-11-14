@@ -1,7 +1,7 @@
 {
   "id": "create",
   "name": "Create",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "A design canvas: Ava builds pages as HTML and CSS artboards while you watch.",
   "entry": "index.html",
   "icon": "icon.svg",
@@ -56,7 +56,7 @@
     },
     {
       "name": "patch_artboard",
-      "description": "Change part of an artboard on the Create board: every element matching a CSS selector. Actions: set_text (new words, in `text`), set_html (new inside, in `html`), replace (the element itself, `html`), append / prepend (inside it, `html`), insert_before / insert_after (next to it, `html`), remove, set_style (CSS declarations in `style`, e.g. 'color: #333; padding: 24px'), set_attribute / remove_attribute (`attribute`, `value`), add_class / remove_class (`value`). To add a section at the end of a page: selector 'body', action 'append', the section in `html`. If nothing matches, the error lists selectors that exist.",
+      "description": "Change part of an artboard on the Create board: the elements matching a CSS selector. Actions: set_text (new words, in `text`), set_html (new inside, in `html`), replace (the element itself, `html`), append / prepend (inside it, `html`), insert_before / insert_after (next to it, `html`), remove, set_style (CSS declarations in `style`, e.g. 'color: #333; padding: 24px'), set_attribute / remove_attribute (`attribute`, `value`), add_class / remove_class (`value`). To add a section at the end of a page: selector 'body', action 'append', the section in `html`. set_text, set_html, replace and remove change ONE element: if the selector matches several, nothing changes and the error gives a selector for each one. The answer lists what matched and each change, before and after; check it.",
       "effect": "inside",
       "input_schema": {
         "type": "object",
@@ -68,9 +68,20 @@
           "html": { "type": "string" },
           "style": { "type": "string" },
           "attribute": { "type": "string" },
-          "value": { "type": "string" }
+          "value": { "type": "string" },
+          "all": { "type": "boolean", "description": "Only true when every match should get the same text or HTML, or all be removed." }
         },
         "required": ["artboard", "selector", "action"]
+      }
+    },
+    {
+      "name": "undo_artboard",
+      "description": "Undo the last write_artboard or patch_artboard on an artboard of the Create board, putting its HTML back as it was. Call again to undo the change before that. Use it when a change made the page worse.",
+      "effect": "inside",
+      "input_schema": {
+        "type": "object",
+        "properties": { "artboard": { "type": "string", "description": "Its id or name." } },
+        "required": ["artboard"]
       }
     },
     {

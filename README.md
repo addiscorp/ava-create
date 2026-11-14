@@ -31,7 +31,8 @@ Ava sees them as `create_<name>`.
 | `new_artboard` | inside | Add an artboard: name, size, position, and its page in `html`. |
 | `read_artboard` | read | One artboard's HTML. |
 | `write_artboard` | inside | Replace an artboard's HTML. |
-| `patch_artboard` | inside | Change the elements matching a CSS selector: `set_text`, `set_html`, `replace`, `append`, `prepend`, `insert_before`, `insert_after`, `remove`, `set_style`, `set_attribute`, `remove_attribute`, `add_class`, `remove_class`. No match is an error that lists selectors that exist. |
+| `patch_artboard` | inside | Change the elements matching a CSS selector: `set_text`, `set_html`, `replace`, `append`, `prepend`, `insert_before`, `insert_after`, `remove`, `set_style`, `set_attribute`, `remove_attribute`, `add_class`, `remove_class`. The answer says how many elements matched and lists each change, before → after. `set_text`, `set_html`, `replace` and `remove` change one element: when the selector matches several, nothing changes and the error gives a selector for each match (`all: true` means every one). No match is an error that lists selectors that exist. |
+| `undo_artboard` | inside | Put an artboard's HTML back as it was before its last `write_artboard` or `patch_artboard`; again for the one before (20 deep, while Create is open). |
 | `move_artboard` | inside | Rename, move or resize. |
 | `delete_artboard` | inside | Delete one. |
 | `get_tokens` / `set_tokens` | read / inside | The shared design tokens (CSS variables every artboard uses). |
