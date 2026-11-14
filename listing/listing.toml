@@ -1,0 +1,12 @@
+# Create's listing: what the catalogue (addiscorp/ava-catalogue), Ava's
+# Settings › Add-ons and heyava.ca/addons/create show about it. The
+# catalogue reads this folder at the pinned commit, checks it, and copies it
+# into the signed package and the signed index. The name, version and short
+# description are the manifest's (public/manifest.json), never repeated here.
+# Screenshots come with the catalogue PR (step 4).
+category = "design"
+icon = "icon.svg"
+long_description = """
+Create is a design canvas that Ava builds on. Ask her for a landing page, an app screen or a poster, and watch each page appear as an artboard on an infinite board while she works. Pan and zoom around, and move artboards where you want them.
+
+Every artboard is plain HTML and CSS (or Tailwind, if you prefer), and the board is plain files in an open format: nothing is locked in. Create can't reach the internet, and nothing in a design runs: it's a picture of a page."""
