@@ -1,5 +1,5 @@
 # Create's listing: what the catalogue (addiscorp/ava-catalogue), Ava's
-# Settings › Add-ons and ava.addis.gg/addons/create show about it. The
+# Settings › Add-ons and heyava.ca/addons/create show about it. The
 # catalogue reads this folder at the pinned commit, checks it, and copies it
 # into the signed package and the signed index. The name, version and short
 # description are the manifest's (public/manifest.json), never repeated here.
