@@ -9,8 +9,9 @@ import '@fontsource/dm-sans/600.css'
 import './style.css'
 // The MCP Apps view SDK (the official @modelcontextprotocol/ext-apps, its
 // self-contained build): Create is an MCP App view whose tools Ava calls.
-import { App, applyDocumentTheme, applyHostStyleVariables } from '@modelcontextprotocol/ext-apps/app-with-deps'
+import { App } from '@modelcontextprotocol/ext-apps/app-with-deps'
 import manifest from '../public/manifest.json'
+import { applyContext } from './host.ts'
 import { Board, idOf, type Artboard, type Change } from './board.ts'
 import { STYLES, type Cleaned, type ParseHtml, type StyleKind } from './format.ts'
 import { patchFrom } from './patch.ts'
@@ -555,12 +556,6 @@ const TOOLS = manifest.tools.map(t => ({
   annotations: ANNOTATIONS[t.effect as keyof typeof ANNOTATIONS],
 }))
 
-function applyContext(ctx: { theme?: 'light' | 'dark'; styles?: { variables?: Record<string, string | undefined> } } | undefined) {
-  if (!ctx) return
-  if (ctx.theme) applyDocumentTheme(ctx.theme)
-  if (ctx.styles?.variables) applyHostStyleVariables(ctx.styles as never)
-}
-
 type Content = { type: 'text'; text: string } | { type: 'image'; data: string; mimeType: string }
 
 /** A tool's answer as MCP content. look_at_artboard's carries its picture. */
@@ -597,8 +592,8 @@ view.oncalltool = async params => {
     return { isError: true, content: [{ type: 'text', text: String((e as Error).message ?? e) }] }
   }
 }
-view.onhostcontextchanged = ctx => applyContext(ctx as never)
-void view.connect(ava.transport() as never).then(() => applyContext(view.getHostContext() as never)).catch(e => console.error('Create: connecting to Ava failed', e))
+view.onhostcontextchanged = ctx => applyContext(ctx)
+void view.connect(ava.transport() as never).then(() => applyContext(view.getHostContext())).catch(e => console.error('Create: connecting to Ava failed', e))
 
 // Ava opens Create at an artboard (a chat chip, or her `open` tool).
 ava.on('ava/notifications/open', async m => {
