@@ -1,6 +1,6 @@
 # Create
 
-An infinite design canvas, as an [Ava](https://github.com/addiscorp/ava)
+An infinite design canvas, as an [Ava](https://github.com/avacanada/ava)
 add-on. Ava builds designs as HTML/CSS artboards through tools while the
 person watches them change. There is no simulated cursor: the model works
 through MCP tools, and the canvas redraws as each call lands.
@@ -59,15 +59,15 @@ npm test           # node --test: the format, the board, patches, Tailwind, and 
 four commands on every PR and on main.
 
 To try it in Ava before it's in the catalogue, a debug build of Ava loads
-the built bundle of every folder in its repo's `addons/` (see addiscorp/ava
+the built bundle of every folder in its repo's `addons/` (see avacanada/ava
 `src-tauri/src/addons/mod.rs` and `qa/README.md`): link this checkout there
 as `addons/create`.
 
 ## Versions, the listing and the catalogue
 
-As in [ava-notebook](https://github.com/addiscorp/ava-notebook): the version
+As in [ava-notebook](https://github.com/avacanada/ava-notebook): the version
 lives in `public/manifest.json` only; `listing/` is what the catalogue shows;
-[addiscorp/ava-catalogue](https://github.com/addiscorp/ava-catalogue) pins a
+[avacanada/ava-catalogue](https://github.com/avacanada/ava-catalogue) pins a
 commit of this repo, builds it, signs it and publishes it. Nothing is
 published from here.
 

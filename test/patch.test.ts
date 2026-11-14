@@ -54,7 +54,7 @@ test('a style for several matches changes every one, and the answer lists each b
   ])
 })
 
-// The live run (addiscorp/ava#53): Qwen3.5 4B set every nav link to "Home Menu
+// The live run (avacanada/ava#53): Qwen3.5 4B set every nav link to "Home Menu
 // Contact" and every paragraph to one sentence, because its selector matched many.
 const BAKERY = '<header><nav><a href="#">Home</a><a href="#">Menu</a><a href="#">Contact</a></nav></header>' +
   '<section class="hero"><p>Fresh bread every morning.</p></section>' +
